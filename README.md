@@ -1,10 +1,19 @@
+# Frameworks benchmarks
+
 The frameworks benchmarks compare the performance (duration and latency) of different frameworks. The pipeline components (partial event handlers) use the same implementation in each framework. Full copies of the frameworks are provided with this repository (except for the close-source *kAER* framework).
 
 The install instructions target Ubuntu 16.04 LTS only. Operating system support varies among frameworks, and this version of Ubuntu happens to be compatible with all of them. The benchmarks should work with other systems, provided that dependencies are met.
 
 The frameworks are written in C and C++. Node.js is used as a glue language to automate the benchmarking process.
 
-# dependencies (Ubuntu 16.04 LTS)
+## clone
+
+This repository uses Git LFS to track large media files. To clone it, you must first [install the Git LFS extension](https://help.github.com/en/articles/installing-git-large-file-storage). Then, run:
+```
+git lfs clone https://github.com/neuromorphic-paris/frameworks_benchmarks
+```
+
+## dependencies (Ubuntu 16.04 LTS)
 
 ```sh
 # install common dependencies
@@ -40,7 +49,7 @@ sudo dpkg -i kAER-0.6-Linux.deb
 sudo apt install -f -y
 ```
 
-# install
+## install
 
 The __install.js__ file at the root of this repository compiles all the frameworks and their modules one-by-one. It is possible to compile the code on a distant machine. The two first lines of the __install.js__ script can be edited to copy the local folder with `rsync` and compile the code over `ssh`. The default script compiles the code locally. The flag `do-not-compile` can be used to only copy over rsync (for non-local compilations only).
 ```sh
@@ -49,7 +58,7 @@ node install.js
 node install.js do-not-compile
 ```
 
-# run
+## run
 
 To run the benchmarks, run from the machine where the code is installed:
 ```sh
@@ -57,7 +66,7 @@ node --max-old-space-size=16384 --expose-gc benchmark.js | tee output.log
 ```
 With the default parameters, the benchmarks take half a day on a standard desktop computer.
 
-# process the results
+## process the results
 
 Results are written in the __results__ directory (one file per task) in JSON format. Filenames have the structure `[pipeline]::[experiment]::[stream]::[framework]::[trial].json`. Hashes are calculated with the MurmurHash3 (128 bits, x64 version) algorithm.
 
@@ -117,25 +126,25 @@ total_latencies[k] = latencies[k] + (packets_ts[i] - points[k][0])
                    = points[k][1] / 1000 - (points[k][0] - packets_ts[0])
 ```
 
-# relevant files per framework
+## relevant files per framework
 
-## cAER (version 1.1.2)
+### cAER (version 1.1.2)
 
 The pipeline XML configurations are located in __frameworks/caer/configurations/__.
 
 The modules are located in __frameworks/caer/benchmark/__.
 
-## kAER (version 0.6)
+### kAER (version 0.6)
 
 Both the pipelines and filters are located in __frameworks/kaer/source/__.
 
-## tarsier (2019-06)
+### tarsier (2019-06)
 
 The pipelines are located in __frameworks/tarsier/source/__.
 
 The event handlers are located in __frameworks/tarsier/third_party/tarsier/source/__.
 
-## event-driven YARP (2019-06)
+### event-driven YARP (2019-06)
 
 Both the pipelines and filters are located in __frameworks/yarp/event-driven/src/benchmark/__.
 
