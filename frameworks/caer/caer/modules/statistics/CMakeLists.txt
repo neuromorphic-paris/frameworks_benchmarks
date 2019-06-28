@@ -1,0 +1,10 @@
+ADD_LIBRARY(statistics SHARED statistics.c)
+
+SET_TARGET_PROPERTIES(statistics
+	PROPERTIES
+	PREFIX "caer_"
+)
+
+TARGET_LINK_LIBRARIES(statistics ${CAER_LIBS})
+
+INSTALL(TARGETS statistics DESTINATION ${CAER_MODULES_DIR})

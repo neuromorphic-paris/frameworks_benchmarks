@@ -1,0 +1,141 @@
+# TODO: must drop libuv1 dependency, not available in Trusty.
+language: cpp
+
+sudo: false
+dist: trusty
+
+before_install:
+  - echo "${BUILD_NAME}"
+  - eval "${MATRIX_EVAL}"
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make clean
+
+script:
+  - make -j2
+
+matrix:
+  include:
+    # Linux-GCC builds
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - libboost-dev
+            - libboost-filesystem-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libusb-1.0-0-dev
+      env:
+         - BUILD_NAME="linux-gcc-5"
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-6
+            - libboost-dev
+            - libboost-filesystem-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libusb-1.0-0-dev
+      env:
+         - BUILD_NAME="linux-gcc-6"
+         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+
+    # Linux-Clang builds
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+            - libboost-dev
+            - libboost-filesystem-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libusb-1.0-0-dev
+      env:
+        - BUILD_NAME="linux-clang-3.6"
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+            - libboost-dev
+            - libboost-filesystem-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libusb-1.0-0-dev
+      env:
+        - BUILD_NAME="linux-clang-4.0"
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+
+    # Linux Sonarcloud build (for code analysis)
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-5
+            - libboost-dev
+            - libboost-filesystem-dev
+            - libboost-program-options-dev
+            - libboost-system-dev
+            - libusb-1.0-0-dev
+        sonarcloud:
+          organization: "inivation-github"
+          token: $SONAR_TOKEN
+      env:
+         - BUILD_NAME="linux-sonar-analysis"
+         - MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
+      script:
+        - build-wrapper-linux-x86-64 --out-dir bw-output make -j2
+        - cd ..
+        - sonar-scanner
+      cache:
+        directories:
+          - '$HOME/.sonar/cache'
+
+    # MacOS X builds
+    - os: osx
+      osx_image: xcode8
+      compiler: gcc
+      env:
+        - BUILD_NAME="osx-gcc-xcode8"
+      before_install:
+        - brew update
+        - brew tap inivation/inivation
+        - brew update
+        - brew install boost libpng
+        - brew install libcaer --with-opencv --with-libserialport
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env:
+        - BUILD_NAME="osx-clang-xcode8"
+      before_install:
+        - brew update
+        - brew tap inivation/inivation
+        - brew update
+        - brew install boost libpng
+        - brew install libcaer --with-opencv --with-libserialport

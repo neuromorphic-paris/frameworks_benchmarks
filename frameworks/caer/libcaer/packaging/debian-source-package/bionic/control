@@ -1,0 +1,17 @@
+Source: libcaer
+Section: devel
+Priority: optional
+Maintainer: iniVation AG <support@inivation.com>
+Build-Depends: debhelper (>=10), cmake (>= 2.8.12), pkg-config (>= 0.29.0), libusb-1.0-0-dev (>= 1.0.17), libserialport-dev (>= 0.1.1), libopencv-dev (>= 3.2.0)
+Standards-Version: 4.0.0
+Homepage: https://gitlab.com/inivation/libcaer/
+
+Package: libcaer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Minimal C library to interact with neuromorphic sensors and processors
+
+Package: libcaer-dev
+Architecture: any
+Depends: libcaer (= ${binary:Version}), ${misc:Depends}, cmake (>= 2.8.12), pkg-config (>= 0.29.0), libusb-1.0-0-dev (>= 1.0.17), libserialport-dev (>= 0.1.1), libopencv-dev (>= 3.2.0)
+Description: Minimal C library to interact with neuromorphic sensors and processors (development files)

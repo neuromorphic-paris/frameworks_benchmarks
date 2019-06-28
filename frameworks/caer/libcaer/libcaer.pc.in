@@ -1,0 +1,12 @@
+prefix=@CAER_LOCAL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: @CMAKE_PROJECT_NAME@
+Description: Minimal C library to access, configure and get data from neuromorphic sensors and processors.
+Version: @PROJECT_VERSION@
+Requires.private: @LIBCAER_PKGCONFIG_REQUIRES_PRIVATE@
+Libs: -L${libdir} -lcaer
+Libs.private: @LIBCAER_PKGCONFIG_LIBS_PRIVATE@
+Cflags: -I${includedir}

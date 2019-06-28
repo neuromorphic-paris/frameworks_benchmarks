@@ -1,0 +1,7 @@
+# Lattice Programmer cable
+SUBSYSTEM=="usb", ATTR{idVendor}=="1134", ATTR{idProduct}=="8001", MODE="0666"
+# Blank FX2 devices
+SUBSYSTEM=="usb", ATTR{idVendor}=="04b4", ATTR{idProduct}=="8613", MODE="0666"
+# Blank FX3 devices
+SUBSYSTEM=="usb", ATTR{idVendor}=="04b4", ATTR{idProduct}=="0053", MODE="0666"
+SUBSYSTEM=="usb", ATTR{idVendor}=="04b4", ATTR{idProduct}=="00f3", MODE="0666"

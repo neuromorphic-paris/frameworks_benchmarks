@@ -1,0 +1,146 @@
+Release 1.2.2 - XX.10.2018
+INCOMPATIBLE CHANGES
+- The modules are now fully separated from the core system by a well-defined
+  API in /usr/include/caer-sdk/ and a library called libcaersdk. Together
+  with the shared CMake module 'caer-base.cmake' installed by libcaer >= 2.4.2,
+  it is now possible to easily build modules outside of the cAER source tree.
+  All Dynap-SE related modules have been moved to their own external repo at
+  https://gitlab.com/aiCTX/caer-modules-dynapse/ and can now be managed
+  independently. Only core system and vision modules remain in the main repo.
+  This change will require updates in your modules source code to use the
+  new header locations, in most cases:
+
+ #include "main.h"
+ #include "base/mainloop.h"
+ #include "base/module.h"
+
+  should be substituted with only:
+
+ #include <caer-sdk/mainloop.h>
+
+  Following a full list of the headers that changed location:
+
+ "base/mainloop.h"         ->  <caer-sdk/mainloop.h>
+ "base/module.h"           ->  <caer-sdk/module.h>
+ "main.h"                  ->  <caer-sdk/utils.h>
+ "ext/buffers.h"           ->  <caer-sdk/buffers.h>
+ "ext/portable_time.h"     ->  <caer-sdk/cross/portable_time.h>
+ "ext/portable_misc.h"     ->  <caer-sdk/cross/portable_misc.h>
+ "ext/pathmax.h"           ->  <caer-sdk/cross/pathmax.h>
+ "ext/c11threads_posix.h"  ->  <caer-sdk/cross/c11threads_posix.h>
+ "ext/threads_ext.h"       ->  <caer-sdk/cross/threads_ext.h>
+ "ext/sshs/sshs.h"         ->  <caer-sdk/sshs/sshs.h>
+ "ext/sshs/sshs.hpp"       ->  <caer-sdk/sshs/sshs.hpp>
+
+  Anything else you might have been using that resides in the ext/ directory
+  is fundamentally forbidden for external modules. The remaining headers
+  there will soon disappear, you will have to copy them into your module and
+  keep a private copy, or search for suitable alternatives.
+- All modules that can be enabled are now enabled by default, so most -Dxxx
+  compilation control switches fall away. Only -DUSE_OPENCV=1/0 and
+  -DVISUALIZER=1/0 remain to control the inclusion of external dependencies
+  (OpenCV for cameracalibration, framestatistics - SFML for visualizer).
+- Support for libcaer 3.0.0, which supports the new device logic version 16:
+  + changed, slightly more efficient data encoding (IMU, APS).
+  + cleaned up device configuration, removed lots of unused debug options.
+  + changed APS FrameDelay to FrameInterval, to allow for setting time between
+    frames and thus control the frame rate directly.
+  + new hardware filter options for DVS: Background Activity, Refractory Period,
+    Skip Events, Polarity Suppress/Flatten, Region of Interest (ROI) and
+    single Pixel Filtering.
+  + full support for new iniVation devices: DAVIS346 Blue, DAVIS346 Red
+    and DAVIS346 Red Color.
+
+NEW FEATURES
+- Docs: added two camera example 'davis-2cams-config.xml'.
+
+BUG FIXES
+- Output modules: properly exit on initialization failure.
+- Visualizer: removed 'None' event handler/renderer option from being
+  selectable in the GUI.
+- Mainloop/Modules: do basic checks on modules at module discovery time,
+  so that broken modules don't even appear in the list of available ones.
+
+
+Release 1.1.0 - 05.12.2017
+INCOMPATIBLE CHANGES
+- Dynap-SE: biasing has been cleaned up, please use the functions
+  caerDynapseGetBiasCore() and caerDynapseSetBiasCore() from dynapse_utils.h
+  to get/set biases from other modules. No other functions to do this
+  are supported. The configuration path for biases changed to be more
+  clearly laid out and is now: 'bias/Ux/Cy/<BiasName>/'.
+  Also the software spike generator is now its own module, called
+  'softspikegen'. The 'fpgaspikegen' and 'poissonspikegen' modules have
+  been ported to the new modules system. The 'monitorneufilter' module is
+  now directly integrated as part of the main Dynap-SE device input module.
+- Modules: we are shifting to a SDK-like system. Most non-core modules
+  have been moved to a private repository. Please contact us for access.
+- Dependencies: requires libcaer 2.4.0. mini-xml is not needed anymore,
+  and libuv is only needed for the misc/out/ modules. Removal of this
+  dependency is tracked in issue #73. Also the Boost.iostreams package
+  is now required, in addition to system, filesystem and program_options.
+  The SLRE dependency in SSHS has also been removed in favor of std::regex.
+- License: changed license from GPL-2 to LGPL-2.1 to allow for closed
+  source plugins/modules.
+- Devices/Inputs: removed 'highestTimestamp' sourceInfo node attribute for
+  input devices and modules. It was not being used anywhere.
+
+NEW FEATURES
+- Documentation: added several XML configuration examples in docs/.
+- Modules: added 'description' field to 'struct caer_module_info'.
+- Modules: modules can now wait, using caerMainloopGetModuleInputIDs(),
+  for their inputs to be ready.
+- SSHS: rewritten in C++, added sshsAttributeReadModifier callback
+  to influence values returned when reading attributes.
+- SSHS: added sshsNodeCreateAttributePollTime(), sshsNodeCreateAttributeListOptions()
+  and sshsNodeCreateAttributeFileChooser() functions to create
+  informative attributes, to be used by GUIs and clients.
+- Visualizer: rewritten to use C++ and the SFML libraries. This now
+  works on MacOS X too. Fixes issue #92.
+- mainloop.cpp: order modules in such a way to minimize event packets
+  needing to be copied around (performance improvement).
+- mainloop.h: added caerMainloopGetModuleNode() function.
+- netparser: network parser module for Dynap-SE.
+
+BUG FIXES
+- mainloop.cpp: fixed various issues with module order generation.
+  Fixes issues #121, #112, #107.
+- sshs_node.cpp: fixed various memory problems, issues #120, #119,
+  #118, #117, and #93.
+- Boost: improved compatibility with older 1.5X versions.
+- module.cpp: changed separation character for multiple modules search
+  paths in the 'modulesSearchPath' attribute to '|' instead of ':'.
+  This is needed for Windows compatibility.
+- Input modules: correctly recognize Dynap-SE files, fixes issue #128.
+
+
+Release 1.0.1 - 03.07.2017 (ChangeLog incomplete)
+INCOMPATIBLE CHANGES
+- Visualizer: cannot work on MacOS X due to how the Allegro5 library
+  implementes initialization by overriding main(). Trying to enable
+  the visualizer on MacOS X results in an error now.
+
+NEW FEATURES
+- Docs: new 'docs/modules.txt' document to describe modules system.
+- Input/Output modules: use caerModuleLog() where possible.
+- caer-bin: now supports several command-line options, -h/--help to get
+  a help text, -c/--config to specify an alternative XML configuration
+  file, and -o/--override to override a specific configuration parameter
+  that was loaded from the XML configuration file.
+- DAVIS: added support for automatic exposure control via libcaer.
+
+BUG FIXES
+- Windows: plugins can now successfully link against the symbols the
+  executable provides, by generating a special DLL import library.
+- MacOS X: fixed undefined references in plugins during linking.
+- MacOS X: also search for modules in files with .dylib extension.
+- SSHS: when importing nodes and attributes from XML files, create them
+  with SSHS_FLAGS_NORMAL instead of SSHS_FLAGS_READ_ONLY, to allow
+  modification by internal users.
+- README: added Boost dependency to documentation.
+
+
+Release 1.0.0 - 28.04.2017
+- Initial 1.X branch release. Uses libcaer 2.0.2. Supports DVS128, DAVIS and
+  Dynap-se devices, as well as AEDAT 3.1 input/output via files and network.
+  New modules system, see 'docs/modules.txt' and 'README.porting'.

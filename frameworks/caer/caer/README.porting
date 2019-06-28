@@ -1,0 +1,174 @@
+Port modules to new dynamic interface
+=====================================
+
+1) Remove module.h file, this should generally be almost empty and simply contain
+a few includes and the main module function definition.
+Copy only the includes to module.c.
+
+2) Check your includes, do they make sense? Do they seem complete? The first
+three should always be in general:
+
+#include "main.h"
+#include "base/mainloop.h"
+#include "base/module.h"
+
+3) The 'static struct caer_module_functions' declaration should be marked 'const'.
+
+4) The big new part of the dynamic module system is the existence of input and
+output definitions, as well as an informative structure, that is returned by
+the function 'caerModuleInfo caerModuleGetInfo(void)', which must be defined.
+Let's take as an example a module that takes a Polarity packet and a Frame packet,
+and processes them without changing them by calculating points in a 3D space;
+returning a Point3D event packet as a result, this looked like this before:
+
+caerPoint3DEventPacket mainModuleFunction(uint16_t moduleID, caerPolarityEventPacketConst polarity,
+	caerFrameEventPacketConst frame) {
+
+	caerModuleData moduleData = caerMainloopFindModule(moduleID, "MODULE", CAER_MODULE_PROCESSOR);
+	if (moduleData == NULL) {
+		return (NULL);
+	}
+
+	caerPoint3DEventPacket data3D = NULL;
+
+	caerModuleSM(&moduleFunctions, moduleData, sizeof(struct ModuleState), 3, polarity, frame,
+		&data3D);
+
+	return (medianData);
+}
+
+Now you'd substitute that input/output information with the appropriate definitions:
+
+static const struct caer_event_stream_in moduleInputs[] = {
+    { .type = POLARITY_EVENT, .number = 1, .readOnly = true },
+    { .type = FRAME_EVENT, .number = 1, .readOnly = true }
+};
+
+static const struct caer_event_stream_out moduleOutputs[] = {
+    { .type = POINT3D_EVENT }
+};
+
+And then gather everything in the caer_module_info struct, which is returned by
+the caerModuleGetInfo() function mentioned before:
+
+static const struct caer_module_info moduleInfo = {
+    .version = 1,
+    .name = "MODULE",
+    .description = "DESCRIPTION",
+    .type = CAER_MODULE_PROCESSOR,
+    .memSize = sizeof(struct ModuleState),
+    .functions = &moduleFunctions,
+    .inputStreams = moduleInputs,
+    .inputStreamsSize = CAER_EVENT_STREAM_IN_SIZE(moduleInputs),
+    .outputStreams = moduleOutputs,
+    .outputStreamsSize = CAER_EVENT_STREAM_OUT_SIZE(moduleOutputs)
+};
+
+caerModuleInfo caerModuleGetInfo(void) {
+    return (&moduleInfo);
+}
+
+5) The RUN function has a new signature now:
+
+static void moduleRun(caerModuleData moduleData, caerEventPacketContainer in,
+    caerEventPacketContainer *out);
+
+Update its definition and declaration.
+Now, due to the changed signature, the code needs to be updated to use this new
+system of input and output of event packets.
+Before you'd usually parse the variable arguments list in order to get the
+various input and output arguments, a highly error-prone method, like this:
+
+caerPolarityEventPacketConst polarity = va_arg(args, caerPolarityEventPacketConst);
+caerFrameEventPacketConst frame = va_arg(args, caerFrameEventPacketConst);
+....
+caerPoint3DEventPacket *results = va_arg(args, caerPoint3DEventPacket *);
+*results = caerPoint3DEventPacketAllocate(128, moduleData->moduleID, 0);
+if (*results == NULL) {
+    return; // Error.
+}
+
+Now instead you get an input packet container (caerEventPacketContainer in),
+where you can search for the appropriate type of packet; as well as an output
+packet container pointer (caerEventPacketContainer *out), which allows you to
+create a packet container and assign it output IFF your module has any.
+If there is no input at all on this run, 'in' will be NULL.
+If your module doesn't state in its output definitions that it can create a
+specific type of output, the 'out' argument will always be NULL.
+So for the above example, this is the new way to handle input and output:
+
+caerPolarityEventPacketConst polarity = (caerPolarityEventPacketConst)
+    caerEventPacketContainerFindEventPacketByTypeConst(in, POLARITY_EVENT);
+caerFrameEventPacketConst frame = (caerFrameEventPacketConst)
+    caerEventPacketContainerFindEventPacketByTypeConst(in, FRAME_EVENT);
+....
+// Allocate packet container for result packet.
+*out = caerEventPacketContainerAllocate(1);
+if (*out == NULL) {
+    return; // Error.
+}
+
+caerPoint3DEventPacket results = caerPoint3DEventPacketAllocate(128, moduleData->moduleID, 0);
+if (results == NULL) {
+    return; // Error.
+}
+else {
+    // Add output packet to packet container.
+    caerEventPacketContainerSetEventPacket(*out, 0, (caerEventPacketHeader) results);
+}
+
+This also has the advantage of making handling of multiple outputs consistent,
+and the resulting packet is not a pointer to pointer anymore, so you don't
+have to (remember to) dereference it on each usage.
+
+6) The RESET function has a new signature now:
+
+static void moduleReset(caerModuleData moduleData, int16_t resetCallSourceID);
+
+Notice the argument changed from uint16_t to int16_t for consistency with the
+actual event source ID. This change has usually minimal repercussions on your
+reset function code, you just have to adjust a few casts.
+
+7) The SSHS configuration system also got a big overhaul, it now supports specifying
+ranges for configuration parameters (min/max), as well as several flags to get for
+example read-only or button-like (notify-only) behavior from configuration parameters.
+There is also a new description parameter to explain what the parameter is actually for.
+To implement this, there is a new set of sshsNodeCreate*() functions with the appropriate
+extra arguments. Those should always be used inside the moduleInit() function to create
+the configuration parameter, so that later on sshsNodePut*() and sshsNodeGet*() calls
+may access it. Trying to modify or access an attribute before it has been created is a
+fatal usage error! The sshsNodePut*IfAbsent() set of functions has been removed, as
+that is the default behavior now when creating nodes: if the value already exists,
+it is not modified (unless it is out-of-range or the force-update flag is set).
+A call in moduleInit() to initialize a configuration parameter, was before:
+
+sshsNodePutIntIfAbsent(moduleData->moduleNode, "param", 1234);
+
+And now instead is (with 0 minimum, 2000 maximum values):
+
+sshsNodeCreateInt(moduleData->moduleNode, "param", 1234, 0, 2000, SSHS_FLAGS_NORMAL, "Describe me.");
+
+8) There also is a new module-specific logging call available;
+
+void caerModuleLog(caerModuleData moduleData, enum caer_log_level logLevel, const char *format, ...);
+
+This simplifies logging calls inside modules by automatically adding the sub-system
+string internally; and adds a new, very useful feature: per-module log-levels.
+Each module now has its own 'logLevel' configuration parameter, which is used
+if the above caerModuleLog() function is used. Prefer this to calling caerLog()
+inside modules, always!
+
+9) The CMakeLists.txt file for your module also needs to be updated so that it correctly
+tries to generate a shared library, a very simple example would look like this:
+
+IF (NOT ENABLE_MODULE)
+    SET(ENABLE_MODULE 0 CACHE BOOL "Enable the most modulous module")
+ENDIF()
+
+IF (ENABLE_MODULE)
+    ADD_LIBRARY(module SHARED module.c)
+
+    TARGET_LINK_LIBRARIES(module ${CAER_C_LIBS})
+
+    INSTALL(TARGETS module DESTINATION ${CM_SHARE_DIR})
+ENDIF()

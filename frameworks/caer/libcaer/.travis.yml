@@ -1,0 +1,162 @@
+language: cpp
+
+sudo: false
+dist: trusty
+
+before_install:
+  - echo "${BUILD_NAME}"
+  - eval "${MATRIX_EVAL}"
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake -DENABLE_SERIALDEV=0 -DENABLE_OPENCV=1 ..
+
+script:
+  - make -j2
+
+matrix:
+  include:
+    # Linux-GCC builds
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:lkoppel/opencv'
+          packages:
+            - g++-4.9
+            - libusb-1.0-0-dev
+            - libopencv-dev
+      env:
+         - BUILD_NAME="linux-gcc-4.9"
+         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:lkoppel/opencv'
+          packages:
+            - g++-6
+            - libusb-1.0-0-dev
+            - libopencv-dev
+      env:
+         - BUILD_NAME="linux-gcc-6"
+         - MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
+
+    # Linux-Clang builds
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:lkoppel/opencv'
+            - llvm-toolchain-precise-3.6
+          packages:
+            - clang-3.6
+            - libusb-1.0-0-dev
+            - libopencv-dev
+      env:
+        - BUILD_NAME="linux-clang-3.6"
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+    - os: linux
+      compiler: clang
+      addons:
+        apt:
+          sources:
+            - sourceline: 'ppa:lkoppel/opencv'
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+            - libusb-1.0-0-dev
+            - libopencv-dev
+      env:
+        - BUILD_NAME="linux-clang-4.0"
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+
+    # Linux Sonarcloud build (for code analysis)
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:lkoppel/opencv'
+          packages:
+            - g++-4.9
+            - libusb-1.0-0-dev
+            - libopencv-dev
+        sonarcloud:
+          organization: "inivation-github"
+          token: $SONAR_TOKEN
+      env:
+         - BUILD_NAME="linux-sonar-analysis"
+         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+      script:
+        - build-wrapper-linux-x86-64 --out-dir bw-output make -j2
+        - cd ..
+        - sonar-scanner
+      cache:
+        directories:
+          - '$HOME/.sonar/cache'
+
+    # Linux docs build (for GitHub Pages)
+    - os: linux
+      compiler: gcc
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:lkoppel/opencv'
+          packages:
+            - g++-4.9
+            - libusb-1.0-0-dev
+            - libopencv-dev
+            - doxygen
+      env:
+         - BUILD_NAME="linux-docs-deploy"
+         - MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+      script:
+        - make doc
+      cache: false
+      deploy:
+        provider: pages
+        skip_cleanup: true
+        github_token: $GITHUB_TOKEN
+        local_dir: docs/html
+        on:
+          tags: true
+
+    # MacOS X builds
+    - os: osx
+      osx_image: xcode8
+      compiler: gcc
+      env:
+        - BUILD_NAME="osx-gcc-xcode8"
+      before_install:
+        - brew update
+        - brew tap rene-dev/sigrok
+        - brew update
+        - brew install libusb opencv
+        - brew install --HEAD libserialport
+      script:
+        - cmake -DENABLE_SERIALDEV=1 ..
+        - make -j2
+    - os: osx
+      osx_image: xcode8
+      compiler: clang
+      env:
+        - BUILD_NAME="osx-clang-xcode8"
+      before_install:
+        - brew update
+        - brew tap rene-dev/sigrok
+        - brew update
+        - brew install libusb opencv
+        - brew install --HEAD libserialport
+      script:
+        - cmake -DENABLE_SERIALDEV=1 ..
+        - make -j2

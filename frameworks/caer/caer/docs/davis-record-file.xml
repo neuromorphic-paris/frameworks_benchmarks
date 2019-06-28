@@ -1,0 +1,32 @@
+<sshs version="1.0">
+    <node name="" path="/">
+        <node name="dvsnoisefilter" path="/dvsnoisefilter/">
+            <attr key="moduleId" type="short">2</attr>
+            <attr key="moduleInput" type="string">1[1]</attr>
+            <attr key="moduleLibrary" type="string">caer_dvsnoisefilter</attr>
+        </node>
+        <node name="caer" path="/caer/">
+            <node name="logger" path="/caer/logger/">
+                <attr key="logLevel" type="byte">5</attr>
+            </node>
+            <node name="server" path="/caer/server/">
+                <attr key="ipAddress" type="string">127.0.0.1</attr>
+                <attr key="portNumber" type="int">4040</attr>
+            </node>
+        </node>
+        <node name="davisCamera" path="/davisCamera/">
+            <attr key="moduleId" type="short">1</attr>
+            <attr key="moduleLibrary" type="string">caer_davis</attr>
+        </node>
+		<node name="outFile" path="/outFile/">
+			<attr key="directory" type="string">/home/youruser/</attr>
+			<attr key="keepPackets" type="bool">false</attr>
+			<attr key="moduleId" type="short">3</attr>
+			<attr key="moduleInput" type="string">1[1a2]</attr>
+			<attr key="moduleLibrary" type="string">caer_output_file</attr>
+			<attr key="prefix" type="string">caerOut</attr>
+			<attr key="ringBufferSize" type="int">512</attr>
+			<attr key="validOnly" type="bool">true</attr>
+		</node>
+    </node>
+</sshs>

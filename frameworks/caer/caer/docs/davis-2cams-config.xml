@@ -1,0 +1,57 @@
+<sshs version="1.0">
+    <node name="" path="/">
+        <node name="caer" path="/caer/">
+            <node name="logger" path="/caer/logger/">
+                <attr key="logLevel" type="byte">5</attr>
+            </node>
+            <node name="server" path="/caer/server/">
+                <attr key="ipAddress" type="string">127.0.0.1</attr>
+                <attr key="portNumber" type="int">4040</attr>
+            </node>
+        </node>
+        <node name="davis-cam1" path="/davis-cam1/">
+            <attr key="moduleId" type="short">1</attr>
+            <attr key="moduleLibrary" type="string">caer_davis</attr>
+            <attr key="serialNumber" type="string">SN_CAM1_HERE</attr>
+        </node>
+        <node name="dvsnoisefilter-cam1" path="/dvsnoisefilter-cam1/">
+            <attr key="moduleId" type="short">2</attr>
+            <attr key="moduleInput" type="string">1[1]</attr>
+            <attr key="moduleLibrary" type="string">caer_dvsnoisefilter</attr>
+        </node>
+        <node name="eventVisualizer-cam1" path="/eventVisualizer-cam1/">
+            <attr key="moduleId" type="short">3</attr>
+            <attr key="moduleInput" type="string">1[1a2]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Polarity</attr>
+        </node>
+        <node name="frameVisualizer-cam1" path="/frameVisualizer-cam1/">
+            <attr key="moduleId" type="short">4</attr>
+            <attr key="moduleInput" type="string">1[2]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Frame</attr>
+        </node>
+        <node name="davis-cam2" path="/davis-cam2/">
+            <attr key="moduleId" type="short">5</attr>
+            <attr key="moduleLibrary" type="string">caer_davis</attr>
+            <attr key="serialNumber" type="string">SN_CAM2_HERE</attr>
+        </node>
+        <node name="dvsnoisefilter-cam2" path="/dvsnoisefilter-cam2/">
+            <attr key="moduleId" type="short">6</attr>
+            <attr key="moduleInput" type="string">5[1]</attr>
+            <attr key="moduleLibrary" type="string">caer_dvsnoisefilter</attr>
+        </node>
+        <node name="eventVisualizer-cam2" path="/eventVisualizer-cam2/">
+            <attr key="moduleId" type="short">7</attr>
+            <attr key="moduleInput" type="string">5[1a6]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Polarity</attr>
+        </node>
+        <node name="frameVisualizer-cam2" path="/frameVisualizer-cam2/">
+            <attr key="moduleId" type="short">8</attr>
+            <attr key="moduleInput" type="string">5[2]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Frame</attr>
+        </node>
+    </node>
+</sshs>

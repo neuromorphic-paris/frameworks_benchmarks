@@ -1,0 +1,85 @@
+libcaer
+====
+
+Minimal C library to access, configure and get data from neuromorphic sensors and processors.
+Currently supported devices are the Dynamic Vision Sensor (DVS), the DAVIS cameras, and the
+Dynap-SE neuromorphic processor.
+
+REQUIREMENTS:
+
+Linux, MacOS X or Windows (for Windows build instructions see README.Windows)
+pkg-config
+cmake >= 2.8.12
+gcc >= 4.9 or clang >= 3.6
+libusb >= 1.0.17
+Optional: libserialport >= 0.1.1
+Optional: OpenCV >= 3.1.0
+
+Please make sure that you have the various development packages installed
+for the above dependencies. They are usually called PKG-dev or PKG-devel.
+
+On Fedora Linux: $ sudo dnf install @c-development cmake pkgconfig libusbx-devel
+On Ubuntu Linux: $ sudo apt-get install build-essential cmake pkg-config libusb-1.0-0-dev
+On MacOS X (using Homebrew): $ brew install cmake pkg-config libusb
+
+INSTALLATION:
+
+1) configure:
+
+$ cmake -DCMAKE_INSTALL_PREFIX=/usr .
+Optional: add -DENABLE_SERIALDEV=1 to enable support for serial port devices,
+such as the eDVS4337, via libserialport.
+Optional: add -DENABLE_OPENCV=1 to enable better support for frame enhancement
+(demoisaicing for color, contrast, white-balance) via OpenCV.
+
+2) build:
+
+$ make
+
+3) install:
+
+$ sudo make install
+
+DOCUMENTATION:
+
+The API documentation for a release can be found at docs/libcaer_api_manual.pdf.
+Online documentation is available at https://inivation.github.io/libcaer/
+Also check the examples/ directory and the iniVation Support website.
+
+For the development tree, you can generate the documentation using:
+
+$ make doc - to generate docs/latex/ and docs/html/ documentation files.
+$ make pdf - to generate a PDF from the LaTeX sources at docs/latex/refman.pdf.
+
+USAGE:
+
+See the examples/ directory. Each example shows minimal working code
+to connect to a device and print out data coming from it. To compile
+the examples, see 'examples/README' for the build commands.
+
+General usage follows this pattern (simplified):
+
+h = caerDeviceOpen(TYPE);
+caerDeviceSendDefaultConfig(h);
+caerDeviceDataStart(h);
+
+loop:
+	c = caerDeviceDataGet(h);
+	work with c (container) and its event packets
+
+caerDeviceDataStop(h);
+caerDeviceClose(&h);
+
+All configuration parameters and event types are specified in the
+public headers and documented there.
+
+HELP:
+
+Please use our GitLab bug tracker to report issues and bugs, or
+our Google Groups mailing list for discussions and announcements.
+
+BUG TRACKER: https://gitlab.com/inivation/libcaer/issues/
+MAILING LIST: https://groups.google.com/d/forum/caer-users/
+
+BUILD STATUS: https://travis-ci.org/inivation/libcaer/
+CODE ANALYSIS: https://sonarcloud.io/dashboard?id=com.inivation.libcaer

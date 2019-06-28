@@ -1,0 +1,188 @@
+# Init CMake (require at least version 2.8.12)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+
+# General build settings
+IF (NOT CMAKE_BUILD_TYPE)
+	SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Possible build types: None Debug Release RelWithDebInfo MinSizeRel")
+ENDIF()
+
+IF (NOT ENABLE_STATIC)
+	SET(ENABLE_STATIC 0 CACHE BOOL "Build and install static library in addition to default shared library")
+ENDIF()
+
+IF (NOT ENABLE_SERIALDEV)
+	SET(ENABLE_SERIALDEV 0 CACHE BOOL "Enable support for serial port devices using libserialport")
+ENDIF()
+
+IF (NOT ENABLE_OPENCV)
+	SET(ENABLE_OPENCV 0 CACHE BOOL "Enable support for frame enhancements using OpenCV")
+ENDIF()
+
+IF (NOT UDEV_SELINUX)
+	SET(UDEV_SELINUX 0 CACHE BOOL "Install SELinux-enabled udev rules on Linux")
+ENDIF()
+
+IF (NOT CMAKE_INSTALL_PREFIX AND UNIX AND NOT APPLE)
+	SET(CMAKE_INSTALL_PREFIX "/usr" CACHE STRING "CMake default install prefix, set to /usr on Unix/Linux")
+ENDIF()
+
+# Project name and version
+PROJECT(libcaer C CXX)
+SET(PROJECT_VERSION_MAJOR 3)
+SET(PROJECT_VERSION_MINOR 1)
+SET(PROJECT_VERSION_PATCH 0)
+SET(PROJECT_VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH})
+
+# Compiler cache support
+FIND_PROGRAM(CCACHE_FOUND ccache)
+IF (CCACHE_FOUND)
+	SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_COMPILE ccache)
+	SET_PROPERTY(GLOBAL PROPERTY RULE_LAUNCH_LINK ccache)
+ENDIF()
+
+# Define installation paths
+INCLUDE(GNUInstallDirs)
+
+# Custom CMake base module
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR})
+INSTALL(FILES caer-base.cmake DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/caer)
+
+# Basic setup for cAER
+INCLUDE(caer-base)
+CAER_SETUP(FALSE)
+
+# Required: threads, math
+SET(LIBCAER_INCDIRS "${CAER_LOCAL_INCDIRS}")
+SET(LIBCAER_LIBDIRS "${CAER_LOCAL_LIBDIRS}")
+
+SET(LIBCAER_LIBS m)
+SET(LIBCAER_PKGCONFIG_LIBS_PRIVATE "-lm")
+
+SET(LIBCAER_LIBS ${LIBCAER_LIBS} ${CAER_C_THREAD_LIBS})
+FOREACH (LLLIB ${CAER_C_THREAD_LIBS})
+	SET(LIBCAER_PKGCONFIG_LIBS_PRIVATE "${LIBCAER_PKGCONFIG_LIBS_PRIVATE} ${LLLIB}")
+ENDFOREACH()
+
+# Search for external libraries with pkg-config.
+INCLUDE(FindPkgConfig)
+
+# Required: basic USB devices support
+PKG_CHECK_MODULES(LIBUSB1 REQUIRED libusb-1.0>=1.0.17)
+SET(LIBCAER_PKGCONFIG_REQUIRES_PRIVATE "libusb-1.0 >= 1.0.17")
+
+SET(LIBCAER_INCDIRS ${LIBCAER_INCDIRS} ${LIBUSB1_INCLUDE_DIRS})
+SET(LIBCAER_LIBDIRS ${LIBCAER_LIBDIRS} ${LIBUSB1_LIBRARY_DIRS})
+SET(LIBCAER_LIBS  ${LIBCAER_LIBS} ${LIBUSB1_LIBRARIES})
+
+# Windows needs extra winsock library for portable endian functions.
+IF (OS_WINDOWS)
+	SET(LIBCAER_LIBS ${LIBCAER_LIBS} ws2_32)
+ENDIF()
+
+# Optional: serial devices support
+IF (ENABLE_SERIALDEV)
+	# Require libserialport, minimum 0.1.1 version.
+	PKG_CHECK_MODULES(SERIALPORT REQUIRED libserialport>=0.1.1)
+	SET(LIBCAER_PKGCONFIG_REQUIRES_PRIVATE "${LIBCAER_PKGCONFIG_REQUIRES_PRIVATE}, libserialport >= 0.1.1")
+
+	SET(LIBCAER_INCDIRS ${LIBCAER_INCDIRS} ${SERIALPORT_INCLUDE_DIRS})
+	SET(LIBCAER_LIBDIRS ${LIBCAER_LIBDIRS} ${SERIALPORT_LIBRARY_DIRS})
+	SET(LIBCAER_LIBS ${LIBCAER_LIBS} ${SERIALPORT_LIBRARIES})
+ENDIF()
+
+# Optional: OpenCV support for frame enhancement
+IF (ENABLE_OPENCV)
+	# Require new OpenCV 3.1 at least.
+	PKG_CHECK_MODULES(OPENCV3 REQUIRED opencv>=3.1.0)
+	SET(LIBCAER_PKGCONFIG_REQUIRES_PRIVATE "${LIBCAER_PKGCONFIG_REQUIRES_PRIVATE}, opencv >= 3.1.0")
+
+	SET(LIBCAER_INCDIRS ${LIBCAER_INCDIRS} ${OPENCV3_INCLUDE_DIRS})
+	SET(LIBCAER_LIBDIRS ${LIBCAER_LIBDIRS} ${OPENCV3_LIBRARY_DIRS})
+	SET(LIBCAER_LIBS ${LIBCAER_LIBS} ${OPENCV3_LIBRARIES})
+ENDIF()
+
+# Add local directory to include paths
+SET(LIBCAER_INCDIRS ${LIBCAER_INCDIRS} ${CMAKE_SOURCE_DIR}/include/)
+SET(LIBCAER_INCDIRS ${LIBCAER_INCDIRS} ${CMAKE_SOURCE_DIR}/includecpp/)
+
+INCLUDE_DIRECTORIES(${LIBCAER_INCDIRS})
+LINK_DIRECTORIES(${LIBCAER_LIBDIRS})
+
+MESSAGE(STATUS "Include directories: ${LIBCAER_INCDIRS}")
+MESSAGE(STATUS "Link directories: ${LIBCAER_LIBDIRS}")
+
+# Subdirectories
+ADD_SUBDIRECTORY(include)
+ADD_SUBDIRECTORY(includecpp)
+ADD_SUBDIRECTORY(src)
+
+# Generate pkg-config file
+CONFIGURE_FILE(libcaer.pc.in libcaer.pc @ONLY)
+
+INSTALL(FILES ${CMAKE_BINARY_DIR}/libcaer.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+# Export the cmake configuration for the install tree
+# This will not work for old cmake versions
+IF (NOT (CMAKE_VERSION VERSION_LESS "3.0"))
+	INCLUDE(CMakePackageConfigHelpers)
+	WRITE_BASIC_CONFIG_VERSION_FILE(
+		${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+		VERSION ${PROJECT_VERSION}
+		COMPATIBILITY SameMajorVersion)
+	SET(include_dirs ${CMAKE_INSTALL_INCLUDEDIR})
+	SET(export_destination ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+	CONFIGURE_PACKAGE_CONFIG_FILE(
+		${PROJECT_SOURCE_DIR}/libcaerConfig.cmake.in
+		${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+		INSTALL_DESTINATION ${export_destination}
+		PATH_VARS include_dirs export_destination)
+	INSTALL(EXPORT libcaer-exports
+		NAMESPACE libcaer::
+		DESTINATION ${export_destination})
+	INSTALL(FILES
+		${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+		${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+		DESTINATION ${export_destination})
+	UNSET(include_dirs)
+	UNSET(export_destination)
+ENDIF()
+
+# Install udev rules
+IF (OS_LINUX AND UDEV_INSTALL)
+	IF (UDEV_SELINUX)
+		INSTALL(FILES
+			docs/udev-rules/selinux/65-inivation.rules
+			docs/udev-rules/selinux/66-inivation_devel.rules
+			DESTINATION "/lib/udev/rules.d/")
+	ELSE()
+		INSTALL(FILES
+			docs/udev-rules/65-inivation.rules
+			docs/udev-rules/66-inivation_devel.rules
+			DESTINATION "/lib/udev/rules.d/")
+	ENDIF()
+ENDIF()
+
+# Automatic documentation generation support
+FIND_PACKAGE(Doxygen)
+
+IF (DOXYGEN_FOUND)
+	ADD_SUBDIRECTORY(docs)
+ENDIF()
+
+# Support automatic RPM generation
+SET(CPACK_PACKAGE_NAME ${PROJECT_NAME})
+SET(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+SET(CPACK_PACKAGE_RELEASE 1)
+SET(CPACK_PACKAGE_CONTACT "support@inivation.com")
+SET(CPACK_PACKAGE_VENDOR "iniVation AG")
+SET(CPACK_PACKAGE_DESCRIPTION "Minimal C library to access, configure and get/send AER data from sensors or to/from neuromorphic processors.")
+SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${CPACK_PACKAGE_DESCRIPTION})
+SET(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+SET(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
+SET(CPACK_GENERATOR "RPM" "DEB")
+SET(CPACK_RPM_PACKAGE_AUTOREQ 1)
+#SET(CPACK_RPM_PACKAGE_REQUIRES "libusbx >= 1.0.17, libserialport >= 0.1.1, opencv >= 3.1.0")
+SET(CPACK_DEBIAN_PACKAGE_SHLIBDEPS 1)
+#SET(CPACK_DEBIAN_PACKAGE_DEPENDS "libusb-1.0-0 (>= 1.0.17), libserialport0 (>= 0.1.1), libopencv-contrib3.1 (>= 3.1.0)")
+
+INCLUDE(CPack)

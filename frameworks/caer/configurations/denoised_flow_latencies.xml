@@ -1,0 +1,52 @@
+<sshs version="1.0">
+    <node name="" path="/">
+        <node name="caer" path="/caer/">
+            <node name="logger" path="/caer/logger/">
+                <attr key="logFile" type="string">@log</attr>
+                <attr key="logLevel" type="int">5</attr>
+            </node>
+            <node name="modules" path="/caer/modules/">
+                <attr key="modulesSearchPath" type="string">@modules</attr>
+            </node>
+            <node name="server" path="/caer/server/">
+                <attr key="ipAddress" type="string">127.0.0.1</attr>
+                <attr key="portNumber" type="int">4040</attr>
+            </node>
+        </node>
+        <node name="benchmark_reader_latencies" path="/benchmark_reader_latencies/">
+            <attr key="filename" type="string">@filename</attr>
+            <attr key="moduleId" type="int">1</attr>
+            <attr key="moduleLibrary" type="string">caer_benchmark_reader_latencies</attr>
+            <attr key="output_filename" type="string">@reader_output</attr>
+        </node>
+        <node name="benchmark_flow_sink_latencies" path="/benchmark_flow_sink_latencies/">
+            <attr key="filename" type="string">@sink_output</attr>
+            <attr key="moduleId" type="int">2</attr>
+            <attr key="moduleInput" type="string">3[10]</attr>
+            <attr key="moduleLibrary" type="string">caer_benchmark_flow_sink_latencies</attr>
+        </node>
+        <node name="benchmark_split" path="/benchmark_split/">
+            <attr key="moduleId" type="int">4</attr>
+            <attr key="moduleInput" type="string">1[1]</attr>
+            <attr key="moduleLibrary" type="string">caer_benchmark_split</attr>
+        </node>
+        <node name="benchmark_compute_flow" path="/benchmark_compute_flow/">
+            <attr key="moduleId" type="int">3</attr>
+            <attr key="moduleInput" type="string">1[1a5]</attr>
+            <attr key="moduleLibrary" type="string">caer_benchmark_compute_flow</attr>
+            <attr key="width" type="int">304</attr>
+            <attr key="height" type="int">240</attr>
+            <attr key="spatial_window" type="int">3</attr>
+            <attr key="temporal_window" type="int">10000</attr>
+            <attr key="minimum_number_of_events" type="int">8</attr>
+        </node>
+        <node name="benchmark_mask_isolated" path="/benchmark_mask_isolated/">
+            <attr key="moduleId" type="int">5</attr>
+            <attr key="moduleInput" type="string">1[1a4]</attr>
+            <attr key="moduleLibrary" type="string">caer_benchmark_mask_isolated</attr>
+            <attr key="width" type="int">304</attr>
+            <attr key="height" type="int">240</attr>
+            <attr key="temporal_window" type="int">1000</attr>
+        </node>
+    </node>
+</sshs>

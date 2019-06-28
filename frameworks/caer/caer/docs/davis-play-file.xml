@@ -1,0 +1,30 @@
+<sshs version="1.0">
+    <node name="" path="/">
+        <node name="noisefilter" path="/noisefilter/">
+            <attr key="moduleId" type="short">2</attr>
+            <attr key="moduleInput" type="string">1[1]</attr>
+            <attr key="moduleLibrary" type="string">caer_dvsnoisefilter</attr>
+        </node>
+        <node name="caer" path="/caer/">
+            <node name="logger" path="/caer/logger/">
+                <attr key="logLevel" type="byte">5</attr>
+            </node>
+            <node name="server" path="/caer/server/">
+                <attr key="ipAddress" type="string">127.0.0.1</attr>
+                <attr key="portNumber" type="int">4040</attr>
+            </node>
+        </node>
+        <node name="davisFilePlayer" path="/davisFilePlayer/">
+            <attr key="moduleId" type="short">1</attr>
+            <attr key="moduleLibrary" type="string">caer_input_file</attr>
+			<attr key="moduleOutput" type="string">1</attr>
+			<attr key="filePath" type="string">/where/my/file/is.aedat</attr>
+        </node>
+        <node name="eventVisualizer" path="/eventVisualizer/">
+            <attr key="moduleId" type="short">3</attr>
+            <attr key="moduleInput" type="string">1[1a2]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Polarity</attr>
+        </node>
+    </node>
+</sshs>

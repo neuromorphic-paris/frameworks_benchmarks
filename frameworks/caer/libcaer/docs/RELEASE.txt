@@ -1,0 +1,17 @@
+1) Update ChangeLog, version/date. Commit.
+2) Update CMakeLists.txt, version. Also libcaer.spec and
+   packageUbuntu.sh in packaging/, version. Commit.
+3) Regenerate documentation, copy PDF. Commit.
+4) Release on GitLab with release notes. Makes tag and source tarballs.
+5) Update Homebrew repo (change version, SHA256 sum).
+6) Update Gentoo repo (copy ebuild, update hashes).
+7) Update Fedora package: go to packaging/fedora-source-package/,
+   execute ./packageFedora.sh from a Fedora system to generate src.rpm.
+   Login to https://copr.fedorainfracloud.org/coprs/llongi/inivation/,
+   go to Builds -> New Build, upload src.rpm, tick all distributions.
+8) Update Ubuntu package: go to packaging/debian-source-package/,
+   execute packageUbuntu.sh for each supported series. This must
+   happen on a properly setup Ubuntu system with GPG keys loaded.
+   $ ./packageUbuntu.sh --source --upload --distro $DISTRO
+9) Send announces to appropriate Google Groups.
+10) Increase version to odd number (+1) for next development cycle.

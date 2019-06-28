@@ -1,0 +1,133 @@
+<sshs version="1.0">
+    <node name="" path="/">
+        <node name="dvsnoisefilter" path="/dvsnoisefilter/">
+            <attr key="deltaT" type="int">30000</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">2</attr>
+            <attr key="moduleInput" type="string">1[1]</attr>
+            <attr key="moduleLibrary" type="string">caer_dvsnoisefilter</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+            <attr key="subSampleBy" type="byte">0</attr>
+        </node>
+        <node name="caer" path="/caer/">
+            <node name="logger" path="/caer/logger/">
+                <attr key="logLevel" type="byte">5</attr>
+            </node>
+            <node name="server" path="/caer/server/">
+                <attr key="ipAddress" type="string">127.0.0.1</attr>
+                <attr key="portNumber" type="int">4040</attr>
+            </node>
+        </node>
+        <node name="caffe" path="/caffe/">
+            <attr key="detThreshold" type="double">0.96</attr>
+            <attr key="doNormInputImages" type="bool">true</attr>
+            <attr key="doPrintOutputs" type="bool">false</attr>
+            <attr key="doShowActivations" type="bool">false</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">9</attr>
+            <attr key="moduleInput" type="string">5[2]</attr>
+            <attr key="moduleLibrary" type="string">libcaffeinterface</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+            <attr key="sizeDisplay" type="int">1024</attr>
+        </node>
+        <node name="davisCamera" path="/davisCamera/">
+            <attr key="autoRestart" type="bool">true</attr>
+            <attr key="busNumber" type="short">0</attr>
+            <attr key="devAddress" type="short">0</attr>
+            <attr key="logLevel" type="byte">4</attr>
+            <attr key="moduleId" type="short">1</attr>
+            <attr key="moduleLibrary" type="string">caer_davis</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+            <attr key="serialNumber" type="string"></attr>
+            <node name="system" path="/davisCamera/system/">
+                <attr key="DataExchangeBufferSize" type="int">64</attr>
+                <attr key="PacketContainerInterval" type="int">10000</attr>
+                <attr key="PacketContainerMaxPacketSize" type="int">8192</attr>
+            </node>
+        </node>
+        <node name="eventVisualizer" path="/eventVisualizer/">
+            <attr key="eventHandlerListOptions" type="string">None,Neuron_Monitor,Input</attr>
+            <attr key="rendererListOptions" type="string">None,Polarity,Frame,IMU_6-axes,2D_Points,Spikes,Spikes_Raster_Plot,ETF4D,Polarity_and_Frames</attr>
+            <attr key="eventHandler" type="string">None</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">3</attr>
+            <attr key="moduleInput" type="string">1[1a2]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Polarity</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+            <attr key="showStatistics" type="bool">false</attr>
+            <attr key="subsampleRendering" type="int">1</attr>
+            <attr key="windowPositionX" type="int">313</attr>
+            <attr key="windowPositionY" type="int">101</attr>
+            <attr key="zoomFactor" type="float">1.5</attr>
+        </node>
+        <node name="eventVisualizerUnfiltered" path="/eventVisualizerUnfiltered/">
+            <attr key="eventHandlerListOptions" type="string">None,Neuron_Monitor,Input</attr>
+            <attr key="rendererListOptions" type="string">None,Polarity,Frame,IMU_6-axes,2D_Points,Spikes,Spikes_Raster_Plot,ETF4D,Polarity_and_Frames</attr>
+            <attr key="eventHandler" type="string">None</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">6</attr>
+            <attr key="moduleInput" type="string">1[1]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Polarity</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+            <attr key="showStatistics" type="bool">false</attr>
+            <attr key="subsampleRendering" type="int">1</attr>
+            <attr key="windowPositionX" type="int">100</attr>
+            <attr key="windowPositionY" type="int">100</attr>
+            <attr key="zoomFactor" type="float">1</attr>
+        </node>
+        <node name="frameVisualizer" path="/frameVisualizer/">
+            <attr key="eventHandlerListOptions" type="string">None,Neuron_Monitor,Input</attr>
+            <attr key="rendererListOptions" type="string">None,Polarity,Frame,IMU_6-axes,2D_Points,Spikes,Spikes_Raster_Plot,ETF4D,Polarity_and_Frames</attr>
+            <attr key="eventHandler" type="string">None</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">4</attr>
+            <attr key="moduleInput" type="string">1[2]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Frame</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+            <attr key="showStatistics" type="bool">false</attr>
+            <attr key="subsampleRendering" type="int">1</attr>
+            <attr key="windowPositionX" type="int">678</attr>
+            <attr key="windowPositionY" type="int">102</attr>
+            <attr key="zoomFactor" type="float">2.5</attr>
+        </node>
+        <node name="imageGenView" path="/imageGenView/">
+            <attr key="eventHandlerListOptions" type="string">None,Neuron_Monitor,Input</attr>
+            <attr key="rendererListOptions" type="string">None,Polarity,Frame,IMU_6-axes,2D_Points,Spikes,Spikes_Raster_Plot,ETF4D,Polarity_and_Frames</attr>
+            <attr key="eventHandler" type="string">None</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">8</attr>
+            <attr key="moduleInput" type="string">5[2]</attr>
+            <attr key="moduleLibrary" type="string">caer_visualizer</attr>
+            <attr key="renderer" type="string">Frame</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+            <attr key="showStatistics" type="bool">false</attr>
+            <attr key="subsampleRendering" type="int">1</attr>
+            <attr key="windowPositionX" type="int">1301</attr>
+            <attr key="windowPositionY" type="int">59</attr>
+            <attr key="zoomFactor" type="float">8.5</attr>
+        </node>
+        <node name="imagegenerator" path="/imagegenerator/">
+            <attr key="colorScale" type="short">200</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">5</attr>
+            <attr key="moduleInput" type="string">1[1]</attr>
+            <attr key="moduleLibrary" type="string">libimagegenerator</attr>
+            <attr key="numSpikes" type="int">4000</attr>
+            <attr key="outputFrameSizeX" type="short">64</attr>
+            <attr key="outputFrameSizeY" type="short">64</attr>
+            <attr key="rectifyPolarities" type="bool">false</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+        </node>
+        <node name="stat" path="/stat/">
+            <attr key="divisionFactor" type="long">1000</attr>
+            <attr key="logLevel" type="byte">5</attr>
+            <attr key="moduleId" type="short">7</attr>
+            <attr key="moduleInput" type="string">1[2]</attr>
+            <attr key="moduleLibrary" type="string">caer_statistics</attr>
+            <attr key="runAtStartup" type="bool">true</attr>
+        </node>
+    </node>
+</sshs>

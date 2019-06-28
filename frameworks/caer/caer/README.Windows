@@ -1,0 +1,37 @@
+WINDOWS BUILD INSTRUCTIONS
+==========================
+We support building cAER on the Windows platform by using the MinGW32/64 compilers
+and the MSYS2 environment. Following are detailed step-by-step instructions to install
+the required components and get everything building, we use MinGW64 here for the
+64-bit Windows platform, if you want to build for 32-bit Windows, just replace all
+mentions of 'x86_64' with 'i686'. Whenever you want to install a package, use
+the MSYS2 shell, while to build code, use the MinGW32/64 shells!
+
+1) Install the MSYS2 environment, the MinGW64 compiler and libcaer and all its
+dependencies as described in detail in libcaer's 'README.Windows'.
+
+=== The following happens in the MSYS2 shell! ===
+
+2) Install the required dependencies: pacman -S mingw-w64-x86_64-boost
+
+3) Install any additional dependencies as required: pacman -S <pkg-name>
+ Input/Output modules: mingw-w64-x86_64-libpng mingw-w64-x86_64-libuv
+ Visualizer module: mingw-w64-x86_64-sfml mingw-w64-x86_64-glew
+ CameraCalibration, FrameStatistics modules: mingw-w64-x86_64-opencv
+
+4) Place the cAER source in a location easily accessible to MSYS2. We usually
+put the source code into 'C:\msys64\home\caer\' and use TortoiseGit
+(https://tortoisegit.org/) or git from the MSYS2 shell (pacman -S git) to get it.
+
+=== The following happens in the MinGW32/64 build shell! ===
+
+5) Switch to the cAER checkout directory: cd /home/caer/
+
+6) Configure, run CMake: cmake -G "MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=/mingw64 -DUSE_OPENCV=1 -DVISUALIZER=1 .
+Change this to suit your needs, by enabling/disabling the proper modules!
+
+7) Build, run Make: make
+
+8) Install: make install
+
+Congratulations, you now have a working cAER on Windows!

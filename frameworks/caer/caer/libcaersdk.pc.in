@@ -1,0 +1,12 @@
+prefix=@CAER_LOCAL_PREFIX@
+exec_prefix=${prefix}
+libdir=${prefix}/@CMAKE_INSTALL_LIBDIR@
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+
+Name: libcaersdk
+Description: cAER framework SDK API.
+Version: @PROJECT_VERSION@
+Requires.private: @CAER_PKGCONFIG_REQUIRES_PRIVATE@
+Libs: -L${libdir} -lcaersdk
+Libs.private: @CAER_PKGCONFIG_LIBS_PRIVATE@
+Cflags: -I${includedir}

@@ -1,0 +1,5 @@
+**/build/
+results/
+media/*.json
+**/temporary/
+.DS_Store

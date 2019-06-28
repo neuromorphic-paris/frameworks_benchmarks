@@ -1,0 +1,15 @@
+DVS128 example:
+C: gcc -std=c11 -pedantic -Wall -Wextra -O2 -o dvs128_simple dvs128_simple.c -D_DEFAULT_SOURCE=1 -lcaer
+C++: g++ -std=c++11 -pedantic -Wall -Wextra -O2 -o dvs128_simple dvs128_simple.cpp -D_DEFAULT_SOURCE=1 -lcaer
+
+eDVS4337 example:
+C: gcc -std=c11 -pedantic -Wall -Wextra -O2 -o edvs_simple edvs_simple.c -D_DEFAULT_SOURCE=1 -lcaer
+C++: g++ -std=c++11 -pedantic -Wall -Wextra -O2 -o edvs_simple edvs_simple.cpp -D_DEFAULT_SOURCE=1 -lcaer
+
+DAVIS example:
+C: gcc -std=c11 -pedantic -Wall -Wextra -O2 -o davis_simple davis_simple.c -D_DEFAULT_SOURCE=1 -lcaer
+C++: g++ -std=c++11 -pedantic -Wall -Wextra -O2 -o davis_simple davis_simple.cpp -D_DEFAULT_SOURCE=1 -lcaer
+Text Output (C++): g++ -std=c++11 -pedantic -Wall -Wextra -O2 -o davis_text davis_text.cpp -D_DEFAULT_SOURCE=1 -lcaer
+Two Cameras (C): gcc -std=c11 -pedantic -Wall -Wextra -O2 -o davis_simple_2cam davis_simple_2cam.c -D_DEFAULT_SOURCE=1 -lcaer
+CvGUI (C++, needs OpenCV support): g++ -std=c++11 -pedantic -Wall -Wextra -O2 $(pkg-config --cflags-only-I opencv) -o davis_cvgui davis_cvgui.cpp -D_DEFAULT_SOURCE=1 -lcaer $(pkg-config --libs opencv)
+CvGUI Filtering Example (C++, needs OpenCV support): g++ -std=c++11 -pedantic -Wall -Wextra -O3 $(pkg-config --cflags-only-I opencv) -o davis_cvgui_filters davis_cvgui_filters.cpp -D_DEFAULT_SOURCE=1 -lcaer $(pkg-config --libs opencv)
