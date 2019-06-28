@@ -10,7 +10,7 @@ The frameworks are written in C and C++. Node.js is used as a glue language to a
 
 This repository uses Git LFS to track large media files. To clone it, you must first [install the Git LFS extension](https://help.github.com/en/articles/installing-git-large-file-storage). Then, run:
 ```
-git lfs clone https://github.com/neuromorphic-paris/frameworks_benchmarks
+git clone https://github.com/neuromorphic-paris/frameworks_benchmarks
 ```
 
 ## dependencies (Ubuntu 16.04 LTS)
