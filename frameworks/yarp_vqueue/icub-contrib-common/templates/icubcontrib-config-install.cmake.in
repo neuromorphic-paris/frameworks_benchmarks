@@ -1,0 +1,13 @@
+# Copyright: (C) 2013 Istituto Italiano di Tecnologia
+# Author: Elena Ceseracciu
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+if (NOT @packagename@_FOUND)
+
+set(@packagename@_LIBRARIES "@MY_ICUBCONTRIB_TARGETS@" CACHE INTERNAL "List of @packagename@ libraries")
+
+include("@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/@packagename@/@EXPORT_CONFIG_FILE@")
+include("@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@/@packagename@/@EXPORT_INCLUDE_FILE@")
+
+set (@packagename@_FOUND TRUE)
+endif (NOT @packagename@_FOUND)

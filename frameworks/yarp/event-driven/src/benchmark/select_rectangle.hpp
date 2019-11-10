@@ -33,10 +33,9 @@ class select_rectangle : public yarp::os::RFModule {
         if (input_queue == nullptr) {
             return false;
         }
-        ev::vQueue output_queue;
-        for (const auto& generic_event : *input_queue) {
-            auto event = ev::is_event<ev::AE>(generic_event);
-            if (event->x >= _left && event->x < _right && event->y >= _bottom && event->y < _top) {
+        std::deque<ev::AddressEvent> output_queue;
+        for (const auto& event : *input_queue) {
+            if (event.x >= _left && event.x < _right && event.y >= _bottom && event.y < _top) {
                 output_queue.push_back(event);
             }
         }
@@ -57,6 +56,6 @@ class select_rectangle : public yarp::os::RFModule {
     uint16_t _bottom;
     uint16_t _right;
     uint16_t _top;
-    benchmark::read_port<ev::vQueue> _input;
+    benchmark::read_port<std::vector<ev::AddressEvent>> _input;
     benchmark::write_port _output;
 };

@@ -12,13 +12,13 @@ int main(int argc, char* argv[]) {
     auto sink_module = benchmark::make_sink_latencies<ev::FlowEvent, benchmark::flow>(
         reader_module.number_of_packets(),
         reader_module.number_of_events(),
-        [](const ev::event<ev::FlowEvent>& event) -> benchmark::flow {
+        [](const ev::FlowEvent& event) -> benchmark::flow {
             return {
-                static_cast<uint64_t>(event->stamp),
-                event->vx,
-                event->vy,
-                static_cast<uint16_t>(event->x),
-                static_cast<uint16_t>(event->y)};
+                static_cast<uint64_t>(event.stamp),
+                event.vx,
+                event.vy,
+                static_cast<uint16_t>(event.x),
+                static_cast<uint16_t>(event.y)};
         });
     reader_module.configure(resource_finder);
     split_module.configure(resource_finder);

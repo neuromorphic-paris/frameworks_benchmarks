@@ -1,4 +1,4 @@
-const frameworks = ['caer', 'kaer', 'tarsier', 'yarp'];
+const frameworks = ['caer', 'kaer', 'tarsier', 'yarp', 'yarp_vqueue'];
 const pipelines = ['mask', 'flow', 'denoised_flow', 'masked_denoised_flow', 'masked_denoised_flow_activity'];
 const experiments_and_repetitions = [['duration', 100], ['latencies', 10]];
 const streams = ['squares', 'street', 'car'];

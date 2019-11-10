@@ -32,16 +32,18 @@ class compute_activity : public yarp::os::RFModule {
         if (input_queue == nullptr) {
             return false;
         }
-        for (auto generic_event : *input_queue) {
-            auto event = ev::is_event<ev::FlowEvent>(generic_event);
-            auto& potential_and_t = _potentials_and_ts[event->x + event->y * _width];
+        std::deque<ev::FlowEvent> output_queue;
+        for (const auto& event : *input_queue) {
+            auto& potential_and_t = _potentials_and_ts[event.x + event.y * _width];
             potential_and_t.first =
-                potential_and_t.first * std::exp(-static_cast<float>(event->stamp - potential_and_t.second) / _decay) + 1;
-            potential_and_t.second = event->stamp;
-            event->vx = potential_and_t.first;
-            event->vy = 0.0f;
+                potential_and_t.first * std::exp(-static_cast<float>(event.stamp - potential_and_t.second) / _decay) + 1;
+            potential_and_t.second = event.stamp;
+            ev::FlowEvent flow_event(event);
+            flow_event.vx = potential_and_t.first;
+            flow_event.vy = 0.0f;
+            output_queue.push_back(flow_event);
         }
-        _output.write(*input_queue, stamp);
+        _output.write(output_queue, stamp);
         ++_received_packets;
         return _received_packets < _number_of_packets;
     }
@@ -57,6 +59,6 @@ class compute_activity : public yarp::os::RFModule {
     uint16_t _width;
     float _decay;
     std::vector<std::pair<float, uint64_t>> _potentials_and_ts;
-    benchmark::read_port<ev::vQueue> _input;
+    benchmark::read_port<std::vector<ev::FlowEvent>> _input;
     benchmark::write_port _output;
 };

@@ -1,0 +1,15 @@
+# Copyright: (C) 2013 Istituto Italiano di Tecnologia
+# Authors: Elena Ceseracciu
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+#This file is automatically configured by CMake
+
+find_package(YARP REQUIRED QUIET)
+
+set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "ICUBcontrib modules are always built with dynamic plugins")
+
+yarp_configure_external_installation(ICUBcontrib NO_PATH_D)
+
+set(ICUBCONTRIB_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@")
+set(ICUBCONTRIB_MODULE_DIR ${ICUBCONTRIB_INSTALL_PREFIX}/@ICUBCONTRIB_MODULE_DIR@)
+set(ICUBCONTRIB_MODULE_PATH ${ICUBCONTRIB_INSTALL_PREFIX}/@ICUBCONTRIB_MODULE_DIR@)

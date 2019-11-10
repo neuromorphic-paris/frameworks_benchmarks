@@ -1,0 +1,157 @@
+version: appveyor.{build}
+
+platform:
+  - Win32
+  - x64
+
+os:
+ - Visual Studio 2015
+ - Visual Studio 2017
+
+configuration:
+  - Release
+  #- Debug
+
+branches:
+  except:
+    - /^.*travis.*$/
+
+environment:
+  CTEST_OUTPUT_ON_FAILURE: 1
+  CTEST_PARALLEL_LEVEL: 1
+  YARP_VERBOSE: 1
+
+init:
+  - cmd: git config --global core.autocrlf true
+
+  # System related variables
+  - cmd: set CMAKE_GENERATOR=Visual Studio
+  - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2015" set CMAKE_GENERATOR=%CMAKE_GENERATOR% 14 2015
+  - cmd: if "%APPVEYOR_BUILD_WORKER_IMAGE%"=="Visual Studio 2017" set CMAKE_GENERATOR=%CMAKE_GENERATOR% 15 2017
+  - cmd: if "%Platform%"=="x64" set CMAKE_GENERATOR=%CMAKE_GENERATOR% Win64
+  - cmd: echo CMAKE_GENERATOR=%CMAKE_GENERATOR%
+
+  # Dependencies found in YARP and iCub packages
+  - cmd: set YARP_LATEST=2.3.70
+  - cmd: set YARP_LATEST_TAG=v%YARP_LATEST%
+  - cmd: set YARP_LATEST_PKG=1
+
+  - cmd: set ICUB_LATEST=1.8.0
+  - cmd: set ICUB_LATEST_TAG=%ICUB_LATEST%
+  - cmd: set ICUB_LATEST_PKG=1
+
+  - cmd: if "%platform%"=="Win32" set ROBOTOLOGY_ROOT=%ProgramFiles(x86)%\robotology
+  - cmd: if "%platform%"=="x64" set ROBOTOLOGY_ROOT=%ProgramFiles%\robotology
+  - cmd: set ROBOTOLOGY_VS=v14
+  - cmd: if "%platform%"=="Win32" set ROBOTOLOGY_ARCH=x86
+  - cmd: if "%platform%"=="x64" set ROBOTOLOGY_ARCH=x86_amd64
+
+  - cmd: set ACE_REL_DIR=ACE-6.3.4_%ROBOTOLOGY_VS%_%ROBOTOLOGY_ARCH%
+  - cmd: set ACE_ROOT=%ROBOTOLOGY_ROOT%\%ACE_REL_DIR%
+  - cmd: set PATH=%PATH%;%ACE_ROOT%\bin
+
+  - cmd: set Eigen3_REL_DIR=eigen-3.3.0
+  - cmd: set Eigen3_ROOT=%ROBOTOLOGY_ROOT%\%Eigen3_REL_DIR%
+
+  - cmd: set Qt5_REL_DIR=Qt-5.6.1_%ROBOTOLOGY_VS%_%ROBOTOLOGY_ARCH%
+  - cmd: set Qt5_ROOT=%ROBOTOLOGY_ROOT%\%Qt5_REL_DIR%
+  - cmd: set Qt5_DIR=%Qt5_ROOT%\lib\cmake\Qt5
+  - cmd: set PATH=%PATH%;%Qt5_ROOT%\bin
+
+  - cmd: set OpenCV_DEFAULT_REL_DIR=opencv-2.4.13
+  - cmd: set OpenCV_REL_DIR=opencv-2.4.13_%ROBOTOLOGY_VS%_%ROBOTOLOGY_ARCH%
+  - cmd: set OpenCV_ROOT=%ROBOTOLOGY_ROOT%\%OpenCV_REL_DIR%
+  - cmd: set OpenCV_DIR=%OpenCV_ROOT%
+  - cmd: set PATH=%PATH%;%OpenCV_ROOT%\bin
+
+  # Other dependencies (libjpeg-turbo)
+  #- cmd: set JPEG_REL_DIR=libjpeg-turbo-1.5.1_%ROBOTOLOGY_VS%_%ROBOTOLOGY_ARCH%
+  #- cmd: set JPEG_DEFAULT_ROOT=%ROBOTOLOGY_ROOT%\%JPEG_REL_DIR%
+  #- cmd: set JPEG_ROOT=%ROBOTOLOGY_ROOT%\%JPEG_REL_DIR%
+  #- cmd: set JPEG_INCLUDE_DIR=%JPEG_ROOT%\include
+  #- cmd: set JPEG_LIBRARY=%JPEG_ROOT%\lib\jpeg.lib
+  #- cmd: set PATH=%PATH%;%JPEG_ROOT%\bin
+
+  # Installers URLs
+  - cmd: set YARP_INSTALLER=https://github.com/robotology/yarp/releases/download/%YARP_LATEST_TAG%/yarp_%YARP_LATEST%_%ROBOTOLOGY_VS%_%ROBOTOLOGY_ARCH%_1.exe
+  - cmd: set ICUB_INSTALLER=https://github.com/robotology/icub-main/releases/download/%ICUB_LATEST_TAG%/iCub_%ICUB_LATEST%_%ROBOTOLOGY_VS%_%ROBOTOLOGY_ARCH%_1.exe
+  #- cmd: if "%platform%"=="Win32" set JPEG_INSTALLER=https://sourceforge.net/projects/libjpeg-turbo/files/1.5.1/libjpeg-turbo-1.5.1-vc.exe/download
+  #- cmd: if "%platform%"=="x64" set JPEG_INSTALLER=https://sourceforge.net/projects/libjpeg-turbo/files/1.5.1/libjpeg-turbo-1.5.1-vc64.exe/download
+
+  # Prepare YARP for tests
+  - cmd: set PATH=%PATH%;%APPVEYOR_BUILD_FOLDER%\build\bin\%CONFIGURATION%
+  - cmd: set YARP_DATA_DIRS=%APPVEYOR_BUILD_FOLDER%\build\share\yarp
+
+  # Print some useful informations:
+  - cmd: set
+  - cmd: cmake --version
+  - cmd: msbuild /version
+
+install:
+  - cmd: md C:\downloads
+
+  # Get YARP installer
+  - cmd: echo Downloading %YARP_INSTALLER%
+  - cmd: appveyor DownloadFile "%YARP_INSTALLER%" -FileName "C:\downloads\yarp.exe"
+  - cmd: start "" /WAIT "c:\downloads\yarp.exe" /S
+  - cmd: timeout 10
+  - cmd: rmdir "%ROBOTOLOGY_ROOT%\yarp-%YARP_LATEST%" /S /Q
+  - cmd: del "%ROBOTOLOGY_ROOT%\Uninstall_YARP.exe" /F /Q
+  - cmd: del "%ROBOTOLOGY_ROOT%\uninstall_YARP.log" /F /Q
+
+  # Get iCub installer (for opencv)
+  - cmd: echo Downloading %ICUB_INSTALLER%
+  - cmd: appveyor DownloadFile "%ICUB_INSTALLER%" -FileName "C:\downloads\iCub.exe"
+  - cmd: start "" /WAIT "c:\downloads\iCub.exe" /S
+  - cmd: timeout 10
+  - cmd: move "%ROBOTOLOGY_ROOT%\%OpenCV_DEFAULT_REL_DIR%" "%ROBOTOLOGY_ROOT%\%OpenCV_REL_DIR%"
+  - cmd: rmdir "%ROBOTOLOGY_ROOT%\icub-%ICUB_LATEST%" /S /Q
+  - cmd: rmdir "%ROBOTOLOGY_ROOT%\glut-3.7.6" /S /Q
+  - cmd: rmdir "%ROBOTOLOGY_ROOT%\gsl-1.14" /S /Q
+  - cmd: rmdir "%ROBOTOLOGY_ROOT%\ipopt-3.12.7" /S /Q
+  - cmd: rmdir "%ROBOTOLOGY_ROOT%\ode-0.13" /S /Q
+  - cmd: rmdir "%ROBOTOLOGY_ROOT%\sdl-1.2.15" /S /Q
+  - cmd: del "%ROBOTOLOGY_ROOT%\Uninstall_iCub.exe" /F /Q
+
+  # Get libjpeg-turbo installer
+  #- cmd: echo Downloading %JPEG_INSTALLER%
+  #- cmd: appveyor DownloadFile "%JPEG_INSTALLER%" -FileName "C:\downloads\libjpeg-turbo.exe"
+  #- cmd: start "" /WAIT "C:\downloads\libjpeg-turbo.exe" /S /D=%JPEG_DEFAULT_ROOT%
+  #- cmd: timeout 10
+  #- cmd: rmdir "%JPEG_DEFAULT_ROOT%\classes" /S /Q
+  #- cmd: rmdir "%JPEG_DEFAULT_ROOT%\doc" /S /Q
+  #- cmd: del "%JPEG_DEFAULT_ROOT%\*.exe" /S /F /Q
+
+before_build:
+  - cmd: cmake -H%APPVEYOR_BUILD_FOLDER% -B%APPVEYOR_BUILD_FOLDER%\build -G"%CMAKE_GENERATOR%" -DCMAKE_INSTALL_PREFIX:PATH=%APPVEYOR_BUILD_FOLDER%\install -C%APPVEYOR_BUILD_FOLDER%\scripts\admin\initial-cache.cmake
+
+build:
+  project: build\yarp.sln
+  parallel: false
+  verbosity: minimal
+
+after_build:
+  - cmd: cmake --build %APPVEYOR_BUILD_FOLDER%\build --target PACKAGE --config %CONFIGURATION%
+  - cmd: move /Y %APPVEYOR_BUILD_FOLDER%\build\*.exe %APPVEYOR_BUILD_FOLDER%
+
+test_script:
+  - cmd: cmake --build %APPVEYOR_BUILD_FOLDER%\build --target RUN_TESTS --config %CONFIGURATION%
+
+#after_test:
+  #- cmd: move "%ROBOTOLOGY_ROOT%" "%APPVEYOR_BUILD_FOLDER%/robotology"
+
+#artifacts:
+  #- path: '*.exe'
+  #- path: 'robotology/$(ACE_REL_DIR)'
+  #- path: 'robotology/$(Eigen3_REL_DIR)'
+  #- path: 'robotology/$(Qt5_REL_DIR)'
+  #- path: 'robotology/$(OpenCV_REL_DIR)'
+  #- path: 'robotology/$(JPEG_REL_DIR)'
+
+notifications:
+  - provider: Slack
+    incoming_webhook:
+      secure: y4pfqod7KJ2iS3k3TbRPSpZ17uNnIPWIWgH79GirKA3xJfIcbvNhB/+mpBbClSXspVaFuPDr19gFj7aBGmoLBhR1DIXAzPDoYonYYpEZdF4=
+
+#on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

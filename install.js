@@ -1,10 +1,11 @@
-const host = 'localhost'; // '[login]@[server / IP address]' or 'localhost'
-const path = ''; // ignored if host is 'localhost'
+const host = 'idv@10.8.0.9'; // '[login]@[server / IP address]' or 'localhost'
+const path = 'benchmark'; // ignored if host is 'localhost'
 const frameworks = [
     'caer',
     'kaer',
     'tarsier',
     'yarp',
+    'yarp_vqueue',
 ];
 
 const child_process = require('child_process');

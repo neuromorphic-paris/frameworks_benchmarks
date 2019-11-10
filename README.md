@@ -64,7 +64,7 @@ To run the benchmarks, run from the machine where the code is installed:
 ```sh
 node --max-old-space-size=16384 --expose-gc benchmark.js | tee output.log
 ```
-With the default parameters, the benchmarks take half a day on a standard desktop computer.
+With the default parameters, it takes about 20 hours to complete the benchmarks on a standard desktop computer.
 
 ## process the results
 
@@ -151,3 +151,11 @@ Both the pipelines and filters are located in __frameworks/yarp/event-driven/src
 The pipelines are assembled in C++ rather than XML, since the latter creates multiple program which are more difficult to start and stop automatically from the benchmark script.
 
 We modified the source file __frameworks/yarp/event-driven/libraries/include/iCub/eventdriven/vPort.h__ in the YARP codebase to allow empty packets, which are required to count the number of packets from our memory sink component in order to gracefully exit the program. The modifications are preceded by a comment tagged `@BENCHMARK`, lines 96 and 200.
+
+### event-driven YARP vQueue (2019-06)
+
+Both the pipelines and filters are located in __frameworks/yarp_vqueue/event-driven/src/benchmark/__.
+
+Event-driven YARP supports two types of containers to transmit events between filters: vectors of events and vQueues. The latter are double-ended queues of pointers to polymorphic events. vQueues support arbitrary event types but are generally slower than vectors, since polymorphic collections do not use contiguous memory.
+
+This repository benchmarks both vectors and vQueues, in event-driven YARP and event-driven YARP vQueue (respectively).

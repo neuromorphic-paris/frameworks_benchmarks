@@ -73,14 +73,14 @@ namespace benchmark {
                 Stamp envelope(0, 0.0);
                 _begin_t = now();
                 for (const auto& packet : _event_stream.packets) {
-                    ev::vQueue queue;
+                    std::deque<ev::AddressEvent> queue;
                     for (const auto event : packet) {
-                        auto address_event = new ev::AddressEvent();
-                        address_event->stamp = event.t;
-                        address_event->x = event.x;
-                        address_event->y = event.y;
-                        address_event->polarity = event.is_increase;
-                        queue.emplace_back(address_event);
+                        ev::AddressEvent address_event;
+                        address_event.stamp = event.t;
+                        address_event.x = event.x;
+                        address_event.y = event.y;
+                        address_event.polarity = event.is_increase;
+                        queue.push_back(address_event);
                     }
                     envelope.update();
                     _output.write(queue, envelope);
@@ -145,14 +145,14 @@ namespace benchmark {
                     } else {
                         busy_sleep_until(_time_point_0 + std::chrono::microseconds(_event_stream.packets_ts[index] - _t_0));
                     }
-                    ev::vQueue queue;
+                    std::deque<ev::AddressEvent> queue;
                     for (const auto event : _event_stream.packets[index]) {
-                        auto address_event = new ev::AddressEvent();
-                        address_event->stamp = event.t;
-                        address_event->x = event.x;
-                        address_event->y = event.y;
-                        address_event->polarity = event.is_increase;
-                        queue.emplace_back(address_event);
+                        ev::AddressEvent address_event;
+                        address_event.stamp = event.t;
+                        address_event.x = event.x;
+                        address_event.y = event.y;
+                        address_event.polarity = event.is_increase;
+                        queue.push_back(address_event);
                     }
                     envelope.update();
                     _output.write(queue, envelope);
@@ -216,8 +216,7 @@ namespace benchmark {
         virtual bool updateModule() override {
             yarp::os::Stamp stamp;
             auto input_queue = _input.read(stamp);
-            for (const auto& generic_event : *input_queue) {
-                auto event = ev::is_event<YarpEvent>(generic_event);
+            for (const auto& event : *input_queue) {
                 _events.push_back(_yarp_event_to_event(event));
             }
             ++_received_packets;
@@ -248,7 +247,7 @@ namespace benchmark {
         std::size_t _received_packets;
         std::vector<Event> _events;
         uint64_t _end_t;
-        read_port<ev::vQueue> _input;
+        read_port<std::vector<YarpEvent>> _input;
         YarpEventToEvent _yarp_event_to_event;
     };
     template <typename YarpEvent, typename Event, typename YarpEventToEvent>
@@ -282,10 +281,9 @@ namespace benchmark {
         virtual bool updateModule() override {
             yarp::os::Stamp stamp;
             auto input_queue = _input.read(stamp);
-            for (const auto& generic_event : *input_queue) {
-                auto event = ev::is_event<YarpEvent>(generic_event);
+            for (const auto& event : *input_queue) {
                 _events.push_back(_yarp_event_to_event(event));
-                _points.emplace_back(static_cast<uint64_t>(event->stamp), now());
+                _points.emplace_back(static_cast<uint64_t>(event.stamp), now());
             }
             ++_received_packets;
             return _received_packets < _number_of_packets;
@@ -316,7 +314,7 @@ namespace benchmark {
         std::size_t _number_of_packets;
         std::size_t _received_packets;
         std::vector<Event> _events;
-        read_port<ev::vQueue> _input;
+        read_port<std::vector<YarpEvent>> _input;
         YarpEventToEvent _yarp_event_to_event;
         std::vector<std::pair<uint64_t, uint64_t>> _points;
     };

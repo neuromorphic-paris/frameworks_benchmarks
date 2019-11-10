@@ -33,14 +33,13 @@ class mask_isolated : public yarp::os::RFModule {
         if (input_queue == nullptr) {
             return false;
         }
-        ev::vQueue output_queue;
-        for (const auto& generic_event : *input_queue) {
-            auto event = ev::is_event<ev::AE>(generic_event);
-            const auto index = event->x + event->y * _width;
-            _ts[index] = event->stamp + _temporal_window;
-            if ((event->x > 0 && _ts[index - 1] > event->stamp) || (event->x < _width - 1 && _ts[index + 1] > event->stamp)
-                || (event->y > 0 && _ts[index - _width] > event->stamp)
-                || (event->y < _height - 1 && _ts[index + _width] > event->stamp)) {
+        std::deque<ev::AddressEvent> output_queue;
+        for (const auto& event : *input_queue) {
+            const auto index = event.x + event.y * _width;
+            _ts[index] = event.stamp + _temporal_window;
+            if ((event.x > 0 && _ts[index - 1] > event.stamp) || (event.x < _width - 1 && _ts[index + 1] > event.stamp)
+                || (event.y > 0 && _ts[index - _width] > event.stamp)
+                || (event.y < _height - 1 && _ts[index + _width] > event.stamp)) {
                 output_queue.push_back(event);
             }
         }
@@ -61,6 +60,6 @@ class mask_isolated : public yarp::os::RFModule {
     uint16_t _height;
     uint64_t _temporal_window;
     std::vector<uint64_t> _ts;
-    benchmark::read_port<ev::vQueue> _input;
+    benchmark::read_port<std::vector<ev::AddressEvent>> _input;
     benchmark::write_port _output;
 };

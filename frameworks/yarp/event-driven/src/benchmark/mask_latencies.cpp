@@ -10,8 +10,8 @@ int main(int argc, char* argv[]) {
     auto sink_module = benchmark::make_sink_latencies<ev::AE, sepia::dvs_event>(
         reader_module.number_of_packets(),
         reader_module.number_of_events(),
-        [](const ev::event<ev::AE>& event) -> sepia::dvs_event {
-            return {static_cast<uint64_t>(event->stamp), static_cast<uint16_t>(event->x), static_cast<uint16_t>(event->y), event->polarity};
+        [](const ev::AE& event) -> sepia::dvs_event {
+            return {static_cast<uint64_t>(event.stamp), static_cast<uint16_t>(event.x), static_cast<uint16_t>(event.y), event.polarity};
         });
     reader_module.configure(resource_finder);
     select_rectangle_module.configure(resource_finder);

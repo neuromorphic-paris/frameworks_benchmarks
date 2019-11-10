@@ -29,10 +29,9 @@ class split : public yarp::os::RFModule {
         if (input_queue == nullptr) {
             return false;
         }
-        ev::vQueue output_queue;
-        for (const auto& generic_event : *input_queue) {
-            auto event = ev::is_event<ev::AE>(generic_event);
-            if (event->polarity == 1) {
+        std::deque<ev::AddressEvent> output_queue;
+        for (const auto& event : *input_queue) {
+            if (event.polarity == 1) {
                 output_queue.push_back(event);
             }
         }
@@ -49,6 +48,6 @@ class split : public yarp::os::RFModule {
     protected:
     std::size_t _number_of_packets;
     std::size_t _received_packets;
-    benchmark::read_port<ev::vQueue> _input;
+    benchmark::read_port<std::vector<ev::AddressEvent>> _input;
     benchmark::write_port _output;
 };
